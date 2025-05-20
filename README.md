@@ -82,13 +82,19 @@ npm start
 ## File Structure
 
 ```
-web-interface/
-├── index.html      # Main application interface
-├── styles.css      # Application styling
-├── script.js       # Frontend logic and WebRTC handling
-├── server.js       # WebSocket signaling server
-├── package.json    # Project dependencies
-└── .gitignore     # Git ignore configuration
+video-streaming/
+    ├── README.md
+    ├── Text-to-video/
+    │   └── Video_generation.ipynb
+    └── web-interface/
+        ├── index.html
+        ├── package-lock.json
+        ├── package.json
+        ├── script.js
+        ├── server.js
+        ├── styles.css
+        └── .gitignore
+
 ```
 
 ## Browser Support
