@@ -42,12 +42,21 @@
             </div>
             <div class="status" id="connectionStatus">Preview media files to enable room controls...</div>
         </div>
+
+        <div class="speech-controls">
+            <h2>3. Speech Controls</h2>
+            <button id="startSpeechBtn">Start Speech Recognition</button>
+            <button id="stopSpeechBtn" disabled>Stop Speech Recognition</button>
+            <div class="speech-output" id="speechOutput"></div>
+            <div class="status" id="speechStatus">Click 'Start Speech Recognition' to begin...</div>
+        </div>
     </div>
 
     <div class="video-container">
         <div class="video-wrapper">
             <h2>Local Preview</h2>
             <video id="localVideo" autoplay muted playsinline></video>
+            <div class="subtitle-container" id="localSubtitles"></div>
             <div class="video-controls">
                 <button id="localPlayBtn">Play</button>
                 <button id="localPauseBtn">Pause</button>
@@ -58,6 +67,7 @@
         <div class="video-wrapper">
             <h2>Remote Stream</h2>
             <video id="remoteVideo" autoplay playsinline></video>
+            <div class="subtitle-container" id="remoteSubtitles"></div>
             <div class="video-controls">
                 <button id="remotePlayBtn">Play</button>
                 <button id="remotePauseBtn">Pause</button>

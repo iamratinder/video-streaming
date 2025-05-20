@@ -8,6 +8,12 @@ const fileStatus = document.getElementById('fileStatus');
 const connectionStatus = document.getElementById('connectionStatus');
 const localLog = document.getElementById('localLog');
 const remoteLog = document.getElementById('remoteLog');
+const startSpeechBtn = document.getElementById('startSpeechBtn');
+const stopSpeechBtn = document.getElementById('stopSpeechBtn');
+const speechOutput = document.getElementById('speechOutput');
+const speechStatus = document.getElementById('speechStatus');
+const localSubtitles = document.getElementById('localSubtitles');
+const remoteSubtitles = document.getElementById('remoteSubtitles');
 
 const ws = new WebSocket('ws://localhost:8080');
 let roomId = '';
@@ -21,6 +27,8 @@ let peerConnection = null;
 let videoElement = null;
 let audioElement = null;
 let mediaController = null;
+let recognition = null;
+let isRecording = false;
 
 const roleSelect = document.getElementById('roleSelect');
 const fileControlsSection = document.getElementById('fileControlsSection');
@@ -749,3 +757,126 @@ function enableRoomControls(enable) {
     document.getElementById('createRoomBtn').disabled = !enable;
     document.getElementById('joinRoomBtn').disabled = !enable;
 }
+
+// Add this new class for speech recognition
+class SpeechRecognitionHandler {
+    constructor(subtitleContainer) {
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            throw new Error('Speech recognition not supported in this browser.');
+        }
+
+        this.subtitleContainer = subtitleContainer;
+        this.recognition = new (window.webkitSpeechRecognition || window.SpeechRecognition)();
+        this.setupRecognition();
+    }
+
+    setupRecognition() {
+        this.recognition.continuous = true;
+        this.recognition.interimResults = true;
+        this.recognition.lang = 'en-US';
+
+        this.recognition.onstart = () => {
+            speechStatus.textContent = 'Listening...';
+            startSpeechBtn.classList.add('recording');
+            startSpeechBtn.disabled = true;
+            stopSpeechBtn.disabled = false;
+            isRecording = true;
+        };
+
+        this.recognition.onend = () => {
+            speechStatus.textContent = 'Speech recognition stopped.';
+            startSpeechBtn.classList.remove('recording');
+            startSpeechBtn.disabled = false;
+            stopSpeechBtn.disabled = true;
+            isRecording = false;
+        };
+
+        this.recognition.onerror = (event) => {
+            speechStatus.textContent = `Error: ${event.error}`;
+            console.error('Speech recognition error:', event.error);
+            this.stop();
+        };
+
+        this.recognition.onresult = (event) => {
+            let interimTranscript = '';
+            let finalTranscript = '';
+
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript;
+                if (event.results[i].isFinal) {
+                    finalTranscript += transcript;
+                } else {
+                    interimTranscript += transcript;
+                }
+            }
+
+            // Update both speech output and subtitles
+            if (finalTranscript) {
+                speechOutput.innerHTML += `<div class="final">${finalTranscript}</div>`;
+                speechOutput.scrollTop = speechOutput.scrollHeight;
+                
+                // Add final transcript to subtitles with fade effect
+                const finalElement = document.createElement('div');
+                finalElement.className = 'final';
+                finalElement.textContent = finalTranscript;
+                this.subtitleContainer.appendChild(finalElement);
+                
+                // Remove old subtitles if more than 2 lines
+                while (this.subtitleContainer.children.length > 2) {
+                    this.subtitleContainer.removeChild(this.subtitleContainer.firstChild);
+                }
+            }
+            
+            if (interimTranscript) {
+                // Update both speech output and subtitles
+                speechOutput.innerHTML = 
+                    speechOutput.innerHTML.replace(/<div class="interim">.*?<\/div>/g, '') +
+                    `<div class="interim">${interimTranscript}</div>`;
+                    
+                // Update interim subtitle
+                let interimElement = this.subtitleContainer.querySelector('.interim');
+                if (!interimElement) {
+                    interimElement = document.createElement('div');
+                    interimElement.className = 'interim';
+                    this.subtitleContainer.appendChild(interimElement);
+                }
+                interimElement.textContent = interimTranscript;
+            }
+        };
+    }
+
+    start() {
+        this.recognition.start();
+    }
+
+    stop() {
+        this.recognition.stop();
+    }
+}
+
+// Add event listeners after other event listeners
+startSpeechBtn.addEventListener('click', () => {
+    try {
+        if (!recognition) {
+            // Use local or remote subtitles container based on role
+            const subtitleContainer = isReceiver ? remoteSubtitles : localSubtitles;
+            recognition = new SpeechRecognitionHandler(subtitleContainer);
+        }
+        recognition.start();
+    } catch (error) {
+        speechStatus.textContent = error.message;
+        startSpeechBtn.disabled = true;
+    }
+});
+
+stopSpeechBtn.addEventListener('click', () => {
+    if (recognition && isRecording) {
+        recognition.stop();
+        // Clear interim subtitles
+        const subtitleContainer = isReceiver ? remoteSubtitles : localSubtitles;
+        const interimElement = subtitleContainer.querySelector('.interim');
+        if (interimElement) {
+            interimElement.remove();
+        }
+    }
+});
