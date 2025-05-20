@@ -13,6 +13,13 @@ A real-time media streaming application that allows synchronized playback of sep
 - 📝 Real-time logging
 - 🎮 Playback controls
 
+## Technologies Used
+
+- [WebRTC](https://webrtc.org/) - Real-time communication
+- [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket) - Signaling server
+- [MediaStream API](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream) - Media handling
+- [MediaStreamTrackProcessor](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamTrackProcessor) - Stream processing
+
 ## Prerequisites
 
 - Node.js (v14 or higher)
