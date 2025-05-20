@@ -1,4 +1,4 @@
-// Update DOM elements at the top
+// DOM Elements
 const videoFileInput = document.getElementById('videoFile');
 const audioFileInput = document.getElementById('audioFile');
 const previewBtn = document.getElementById('previewBtn');
@@ -9,12 +9,11 @@ const connectionStatus = document.getElementById('connectionStatus');
 const localLog = document.getElementById('localLog');
 const remoteLog = document.getElementById('remoteLog');
 
-// Add at the top with other variables
 const ws = new WebSocket('ws://localhost:8080');
 let roomId = '';
 let wsConnected = false;
 
-// Store our streams and connection
+// Store the streams and connection
 let videoStream = null;
 let audioStream = null;
 let combinedStream = null;
@@ -23,12 +22,11 @@ let videoElement = null;
 let audioElement = null;
 let mediaController = null;
 
-// Add at the top with other variables
 const roleSelect = document.getElementById('roleSelect');
 const fileControlsSection = document.getElementById('fileControlsSection');
 let isReceiver = false;
 
-// Add role change handler
+// Role change handler
 roleSelect.addEventListener('change', () => {
     isReceiver = roleSelect.value === 'receiver';
     fileControlsSection.classList.toggle('hidden', isReceiver);
@@ -54,7 +52,7 @@ class MediaSyncController {
         this.pause = this.pause.bind(this);
         this.sync = this.sync.bind(this);
 
-        // Setup sync interval
+        // sync interval
         setInterval(this.sync, 1000);
     }
 
@@ -90,7 +88,7 @@ class MediaSyncController {
     }
 }
 
-// Debug utility - helps identify WebRTC issues
+// Debug utility to help identify WebRTC issues
 window.debugWebRTC = () => {
     if (peerConnection) {
         console.log('PeerConnection state:', {
@@ -111,7 +109,7 @@ window.debugWebRTC = () => {
     }
 };
 
-// Check if files are selected
+// Checking if files are selected
 function checkFiles() {
     if (videoFileInput.files.length > 0 && audioFileInput.files.length > 0) {
         previewBtn.disabled = false;
@@ -282,7 +280,6 @@ function initPeerConnection() {
             
             log(remoteLog, `Current tracks - Video: ${tracks.video.length}, Audio: ${tracks.audio.length}`);
 
-            // Try to play automatically when both tracks are received
             if (tracks.video.length > 0 && tracks.audio.length > 0) {
                 remoteVideo.play().catch(e => {
                     log(remoteLog, `Auto-play failed: ${e.message}`);
@@ -746,9 +743,6 @@ async function createRoom() {
 // Add event listeners for new buttons
 document.getElementById('createRoomBtn').addEventListener('click', createRoom);
 document.getElementById('joinRoomBtn').addEventListener('click', joinRoom);
-
-// Remove old connection-related event listeners
-// Remove createOfferBtn and connectBtn event listeners
 
 function enableRoomControls(enable) {
     document.getElementById('roomId').disabled = !enable;
