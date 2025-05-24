@@ -34,6 +34,12 @@ const roleSelect = document.getElementById('roleSelect');
 const fileControlsSection = document.getElementById('fileControlsSection');
 let isReceiver = false;
 
+const ASSEMBLY_AI_API_KEY = config.ASSEMBLY_AI_API_KEY; 
+let audioRecorder = null;
+let mediaRecorder = null;
+let audioChunks = [];
+let isTranscribing = false;
+
 // Role change handler
 roleSelect.addEventListener('change', () => {
     isReceiver = roleSelect.value === 'receiver';
@@ -203,9 +209,82 @@ async function createCombinedStream() {
         // Initialize media controller
         mediaController = new MediaSyncController(videoElement, audioElement);
         
+        // Set up audio recording for transcription
+        if (!isReceiver) {
+            const audioTrack = audioStream.getAudioTracks()[0];
+            const mediaStream = new MediaStream([audioTrack]);
+            
+            mediaRecorder = new MediaRecorder(mediaStream);
+            mediaRecorder.ondataavailable = async (event) => {
+                if (event.data.size > 0 && isTranscribing) {
+                    audioChunks.push(event.data);
+                    // Send chunk for transcription every 5 seconds
+                    if (audioChunks.length >= 5) {
+                        await sendAudioForTranscription();
+                    }
+                }
+            };
+            
+            // Record in 1-second chunks
+            mediaRecorder.start(1000);
+        }
+
         return combinedStream;
     } catch (error) {
         throw new Error(`Error creating combined stream: ${error.message}`);
+    }
+}
+
+// Add AssemblyAI transcription functions
+async function sendAudioForTranscription() {
+    try {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        audioChunks = []; // Clear chunks after processing
+        
+        // Convert blob to base64
+        const reader = new FileReader();
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = async () => {
+            const base64Audio = reader.result.split(',')[1];
+            
+            // Upload audio
+            const uploadResponse = await axios.post('https://api.assemblyai.com/v2/upload', 
+                { audio_data: base64Audio },
+                {
+                    headers: {
+                        'authorization': ASSEMBLY_AI_API_KEY,
+                        'content-type': 'application/json'
+                    }
+                }
+            );
+
+            const uploadUrl = uploadResponse.data.upload_url;
+
+            // Request transcription
+            const transcriptResponse = await axios.post('https://api.assemblyai.com/v2/transcript',
+                {
+                    audio_url: uploadUrl,
+                    language_detection: true
+                },
+                {
+                    headers: {
+                        'authorization': ASSEMBLY_AI_API_KEY,
+                        'content-type': 'application/json'
+                    }
+                }
+            );
+
+            // Send transcription to receiver via WebSocket
+            if (transcriptResponse.data.text) {
+                ws.send(JSON.stringify({
+                    type: 'caption',
+                    text: transcriptResponse.data.text,
+                    roomId
+                }));
+            }
+        };
+    } catch (error) {
+        console.error('Transcription error:', error);
     }
 }
 
@@ -597,6 +676,21 @@ ws.onmessage = async (event) => {
                     log(localLog, "Added ICE candidate");
                 }
                 break;
+                
+            // Add caption handling
+            case 'caption':
+                if (isReceiver) {
+                    const captionElement = document.createElement('div');
+                    captionElement.className = 'caption';
+                    captionElement.textContent = data.text;
+                    remoteSubtitles.appendChild(captionElement);
+                    
+                    // Remove old captions
+                    while (remoteSubtitles.children.length > 3) {
+                        remoteSubtitles.removeChild(remoteSubtitles.firstChild);
+                    }
+                }
+                break;
         }
     } catch (error) {
         console.error("Error processing message:", error);
@@ -879,4 +973,12 @@ stopSpeechBtn.addEventListener('click', () => {
             interimElement.remove();
         }
     }
+});
+
+// Clean up when leaving/closing
+window.addEventListener('beforeunload', () => {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+    }
+    isTranscribing = false;
 });

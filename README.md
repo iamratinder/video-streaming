@@ -12,6 +12,9 @@ A real-time media streaming application that allows synchronized playback of sep
 - 🏢 Room-based connections
 - 📝 Real-time logging
 - 🎮 Playback controls
+- 🎤 Real-time speech recognition
+- 📺 Live captions and subtitles
+- 🔄 Automatic audio transcription
 
 ## Technologies Used
 
@@ -19,6 +22,8 @@ A real-time media streaming application that allows synchronized playback of sep
 - [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket) - Signaling server
 - [MediaStream API](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream) - Media handling
 - [MediaStreamTrackProcessor](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamTrackProcessor) - Stream processing
+- [Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API) - Speech recognition
+- [AssemblyAI](https://www.assemblyai.com/) - Audio transcription
 
 ## Prerequisites
 
@@ -55,6 +60,8 @@ npm start
 4. Create a new room or join an existing one
 5. Share the room ID with receivers
 6. Use playback controls to manage the stream
+7. Enable speech recognition for real-time captions
+8. Monitor transcription in the speech output panel
 
 ### As a Receiver
 
@@ -62,6 +69,18 @@ npm start
 2. Enter the room ID shared by the sender
 3. Click "Join Room"
 4. Use playback controls to manage your viewing experience
+5. View live captions in the subtitle container
+6. Toggle speech recognition for local transcription
+
+## Speech Recognition Features
+
+- Real-time speech-to-text conversion
+- Automatic subtitle generation
+- Support for multiple languages
+- Interim and final transcription results
+- Synchronized caption display
+- Audio stream transcription
+- Subtitle history tracking
 
 ## Architecture
 
@@ -110,6 +129,9 @@ video-streaming/
 - Large files may require additional buffering
 - Network conditions can affect streaming quality
 - Some browsers may require manual playback initiation
+- Speech recognition requires browser support
+- Transcription requires valid AssemblyAI API key
+- Speech recognition accuracy varies by language
 
 ## Troubleshooting
 
