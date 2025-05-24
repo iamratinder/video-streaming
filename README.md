@@ -112,8 +112,8 @@ video-streaming/
         ├── script.js
         ├── server.js
         ├── styles.css
+        ├── .env.example
         └── .gitignore
-
 ```
 
 ## Browser Support
