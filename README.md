@@ -4,17 +4,17 @@ A real-time media streaming application that allows synchronized playback of sep
 
 ## Features
 
-- 🎥 Synchronized video and audio streaming
-- 🌐 WebRTC peer-to-peer communication
-- 🔄 Real-time media synchronization
-- 👥 Sender/Receiver role selection
-- 🔊 Independent audio control
-- 🏢 Room-based connections
-- 📝 Real-time logging
-- 🎮 Playback controls
-- 🎤 Real-time speech recognition
-- 📺 Live captions and subtitles
-- 🔄 Automatic audio transcription
+- Synchronized video and audio streaming
+- WebRTC peer-to-peer communication
+- Real-time media synchronization
+- Sender/Receiver role selection
+- Independent audio control
+- Room-based connections
+- Real-time logging
+- Playback controls
+- Real-time speech recognition
+- Live captions and subtitles
+- Automatic audio transcription
 
 ## Technologies Used
 
